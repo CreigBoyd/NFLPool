@@ -1,4 +1,5 @@
 {
+
   "name": "nfl-pool-system",
   "private": true,
   "version": "0.0.0",
@@ -13,11 +14,11 @@
     "setup:interactive": "node server/setup.js",
     "db:init": "node server/setup.js",
     "db:reset": "node server/scripts/resetDatabase.js",
-    "start": "node server/server.js",
+    "start": "concurrently \"npm run server:dev\" \"npm run dev\"",
     "start:prod": "node server/server.js",
     "generate:secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
     "predeploy": "npm run build",
-    "deploy:ghpages": "npm run build && git add docs && git commit -m \"chore: build docs\" || true && git push origin HEAD"
+  "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@relume_io/relume-ui": "latest",
