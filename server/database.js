@@ -74,6 +74,9 @@ export async function initializeDatabase() {
     // Ensure all profile columns exist
     await ensureProfileColumns();
     
+    // Ensure all side bet columns exist
+    await ensureSideBetColumns();
+    
     // Setup admin user (secure method)
     await setupAdmin(pool);
     
@@ -245,6 +248,8 @@ async function createTables() {
       is_private TINYINT(1) DEFAULT '0',
       invite_code VARCHAR(10) DEFAULT NULL UNIQUE,
       winner_id INT DEFAULT NULL,
+      winning_option_id INT DEFAULT NULL,
+      actual_result VARCHAR(255) DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
@@ -338,6 +343,7 @@ async function addIndexes() {
   const indexes = [
     { table: 'picks', index: 'idx_picks_user_pool', definition: 'user_id, pool_id' },
     { table: 'picks', index: 'idx_picks_game', definition: 'game_id' },
+    { table: 'picks', index: 'idx_picks_pool_user', definition: 'pool_id, user_id' },
     { table: 'games', index: 'idx_games_pool_status', definition: 'pool_id, status' },
     { table: 'games', index: 'idx_games_date', definition: 'game_date' },
     { table: 'user_scores', index: 'idx_user_scores_pool', definition: 'pool_id, total_points DESC' },
@@ -348,16 +354,15 @@ async function addIndexes() {
     { table: 'refresh_tokens', index: 'idx_refresh_tokens_expires', definition: 'expires_at' },
     { table: 'side_bets', index: 'idx_side_bets_status', definition: 'status, deadline' },
     { table: 'side_bets', index: 'idx_side_bets_code', definition: 'invite_code' },
+    { table: 'side_bets', index: 'idx_side_bets_deadline', definition: 'deadline' },
     { table: 'pools', index: 'idx_pools_status', definition: 'status, start_date' },
-    // Add these to your indexes array:
-{ table: 'users', index: 'idx_age_verified', definition: 'age_verified' },
-{ table: 'users', index: 'idx_admin_approved', definition: 'admin_approved' },
-{ table: 'users', index: 'idx_status', definition: 'status' },
-{ table: 'side_bet_participants', index: 'idx_participants_side_bet', definition: 'side_bet_id' },
-{ table: 'side_bet_participants', index: 'idx_participants_user', definition: 'user_id' },
-{ table: 'side_bet_participants', index: 'idx_side_bet_participants_user', definition: 'user_id' },
-{ table: 'picks', index: 'idx_picks_pool_user', definition: 'pool_id, user_id' },
-{ table: 'game_scores', index: 'idx_game_scores_game', definition: 'game_id' },
+    { table: 'users', index: 'idx_age_verified', definition: 'age_verified' },
+    { table: 'users', index: 'idx_admin_approved', definition: 'admin_approved' },
+    { table: 'users', index: 'idx_status', definition: 'status' },
+    { table: 'side_bet_participants', index: 'idx_participants_side_bet', definition: 'side_bet_id' },
+    { table: 'side_bet_participants', index: 'idx_participants_user', definition: 'user_id' },
+    { table: 'side_bet_participants', index: 'idx_side_bet_participants_user', definition: 'user_id' },
+    { table: 'game_scores', index: 'idx_game_scores_game', definition: 'game_id' },
   ];
 
   try {
@@ -368,8 +373,13 @@ async function addIndexes() {
       `, [table, index]);
 
       if (rows[0].count === 0) {
-        await pool.execute(`CREATE INDEX ${index} ON ${table} (${definition})`);
-        console.log(`✅ Created index ${index} on table ${table}`);
+        try {
+          await pool.execute(`CREATE INDEX ${index} ON ${table} (${definition})`);
+          console.log(`✅ Created index ${index} on table ${table}`);
+        } catch (indexError) {
+          // Index might already exist or there's a constraint issue
+          console.log(`ℹ️  Index ${index} on ${table} may already exist or failed: ${indexError.message}`);
+        }
       }
     }
     console.log('✅ Database indexes checked/created successfully');
@@ -399,6 +409,42 @@ async function ensureProfileColumns() {
     {
       name: 'notification_preferences',
       definition: 'notification_preferences JSON DEFAULT NULL'
+    },
+    {
+      name: 'balance',
+      definition: 'balance DECIMAL(10,2) DEFAULT 100.00'
+    },
+    {
+      name: 'reset_token',
+      definition: 'reset_token VARCHAR(255) DEFAULT NULL'
+    },
+    {
+      name: 'reset_token_expires',
+      definition: 'reset_token_expires DATETIME DEFAULT NULL'
+    },
+    {
+      name: 'age_verified',
+      definition: 'age_verified TINYINT(1) DEFAULT 0'
+    },
+    {
+      name: 'date_of_birth',
+      definition: 'date_of_birth DATE DEFAULT NULL'
+    },
+    {
+      name: 'age_verification_date',
+      definition: 'age_verification_date TIMESTAMP NULL DEFAULT NULL'
+    },
+    {
+      name: 'admin_approved',
+      definition: 'admin_approved TINYINT(1) DEFAULT 0'
+    },
+    {
+      name: 'approval_date',
+      definition: 'approval_date TIMESTAMP NULL DEFAULT NULL'
+    },
+    {
+      name: 'approved_by',
+      definition: 'approved_by INT DEFAULT NULL'
     }
   ];
 
@@ -412,9 +458,66 @@ async function ensureProfileColumns() {
 
       if (columns.length === 0) {
         await pool.execute(`ALTER TABLE users ADD COLUMN ${column.definition}`);
+        console.log(`✅ Added column ${column.name} to users table`);
       }
     } catch (error) {
-      console.error(`Error checking/adding column ${column.name}:`, error);
+      console.error(`❌ Error checking/adding column ${column.name}:`, error);
+    }
+  }
+}
+
+async function ensureSideBetColumns() {
+  const sideBetColumns = [
+    { 
+      name: 'winning_option_id', 
+      definition: 'winning_option_id INT DEFAULT NULL'
+    },
+    { 
+      name: 'actual_result', 
+      definition: 'actual_result VARCHAR(255) DEFAULT NULL'
+    }
+  ];
+
+  for (const column of sideBetColumns) {
+    try {
+      const [columns] = await pool.execute(`
+        SELECT COLUMN_NAME 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'side_bets' AND COLUMN_NAME = ?
+      `, [dbConfig.database, column.name]);
+
+      if (columns.length === 0) {
+        await pool.execute(`ALTER TABLE side_bets ADD COLUMN ${column.definition}`);
+        console.log(`✅ Added column ${column.name} to side_bets table`);
+        
+        // Add foreign key constraint for winning_option_id
+        if (column.name === 'winning_option_id') {
+          try {
+            // Check if foreign key already exists
+            const [fkExists] = await pool.execute(`
+              SELECT CONSTRAINT_NAME 
+              FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
+              WHERE TABLE_SCHEMA = ? 
+              AND TABLE_NAME = 'side_bets' 
+              AND COLUMN_NAME = 'winning_option_id' 
+              AND REFERENCED_TABLE_NAME = 'side_bet_options'
+            `, [dbConfig.database]);
+
+            if (fkExists.length === 0) {
+              await pool.execute(`
+                ALTER TABLE side_bets 
+                ADD CONSTRAINT fk_winning_option 
+                FOREIGN KEY (winning_option_id) REFERENCES side_bet_options(id) ON DELETE SET NULL
+              `);
+              console.log(`✅ Added foreign key constraint for winning_option_id`);
+            }
+          } catch (fkError) {
+            console.log(`ℹ️  Foreign key constraint for winning_option_id may already exist: ${fkError.message}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`❌ Error checking/adding column ${column.name}:`, error);
     }
   }
 }

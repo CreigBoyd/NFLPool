@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.production
+.env.production.local
 .env.*.local
 
 # Dependencies
@@ -16,6 +17,8 @@ build/
 # Logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 logs/
 
 # OS files
@@ -31,3 +34,20 @@ Thumbs.db
 # Testing
 coverage/
 .nyc_output/
+
+# Railway
+.railway/
+
+# Backup files
+*.bak
+*.backup
+
+# Database dumps
+*.sql
+*.sqlite
+*.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp

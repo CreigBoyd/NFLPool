@@ -13,9 +13,11 @@
     "setup:interactive": "node server/setup.js",
     "db:init": "node server/setup.js",
     "db:reset": "node server/scripts/resetDatabase.js",
-    "start": "concurrently \"npm run server:dev\" \"npm run dev\"",
+    "start": "node server/server.js",
     "start:prod": "node server/server.js",
-    "generate:secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
+    "generate:secret": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
+    "predeploy": "npm run build",
+    "deploy:ghpages": "npm run build && git add docs && git commit -m \"chore: build docs\" || true && git push origin HEAD"
   },
   "dependencies": {
     "@relume_io/relume-ui": "latest",
@@ -49,6 +51,7 @@
     "@vitejs/plugin-react": "^4.0.0",
     "autoprefixer": "^10.4.14",
     "concurrently": "^8.2.2",
+    "gh-pages": "^6.3.0",
     "nodemon": "^3.0.1",
     "postcss": "^8.4.24",
     "tailwindcss": "^3.3.2",
