@@ -87,20 +87,39 @@ console.log('🔐 Environment validation complete\n');
 // ============================================
 // APP INITIALIZATION
 // ============================================
+// APP INITIALIZATION
 const app = express();
+
+// Create HTTP server and PORT before initializing Socket.IO
 const server = http.createServer(app);
+const PORT = process.env.PORT || 3001;
+
+// Normalize CLIENT_URL and build allowed origins list
+const clientUrlEnv = process.env.CLIENT_URL || '';
+let clientOrigin = null;
+try {
+  clientOrigin = clientUrlEnv ? new URL(clientUrlEnv).origin : null;
+} catch (e) {
+  console.warn('Invalid CLIENT_URL env var:', clientUrlEnv);
+}
+
+const allowedOrigins = [
+  clientOrigin,
+  'https://creigboyd.github.io',
+  'http://localhost:5173',
+  'http://localhost:3001'
+].filter(Boolean).map(o => o.replace(/\/$/, ''));
+
+// Socket.IO with normalized CORS origins
 const io = new Server(server, {
   cors: {
-    origin: [
-      process.env.CLIENT_URL || "http://localhost:5173",
-      "http://10.0.0.202:5173"
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true
   }
 });
 
-const PORT = process.env.PORT || 3001;
+
 
 // ============================================
 // SECURITY MIDDLEWARE
@@ -123,14 +142,27 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // CORS Configuration
+// CORS Configuration (dynamic, normalized origins)
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.CLIENT_URL] 
-    : ['http://localhost:5173', 'http://localhost:3001'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  origin: (incomingOrigin, callback) => {
+    // allow non-browser requests (no Origin header)
+    if (!incomingOrigin) return callback(null, true);
+
+    const normalized = incomingOrigin.replace(/\/$/, '');
+    if (allowedOrigins.includes(normalized)) {
+      return callback(null, true);
+    }
+
+    console.warn('Blocked CORS request from', incomingOrigin);
+    return callback(new Error('Not allowed by CORS'), false);
+  },
+  credentials: true, // set false only if you never use cookies/sessions
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Ensure preflight responses include the CORS headers
+app.options('*', cors());
 
 // Body parser
 app.use(express.json({ limit: '10mb' }));
