@@ -837,7 +837,8 @@ function CreateSideBetModal({ onClose, onSuccess }) {
     setCreating(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/side-bets', {
+      const response = await fetch(`${API_BASE_URL}/side-bets`, {
+   
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
