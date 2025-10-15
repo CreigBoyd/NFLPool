@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Plus, Users, Clock, DollarSign, Lock, Unlock, Copy, Check, TrendingUp, Award } from 'lucide-react';
 import { format } from 'date-fns';
+import { API_BASE_URL } from '../config/api'; // adjust path if file is in a different folder
 
 function SideBetsPage() {
   const { token } = useAuth();
@@ -20,29 +21,30 @@ function SideBetsPage() {
     fetchSideBets();
   }, [activeTab]);
 
-  const fetchSideBets = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const status = activeTab === 'all' ? '' : activeTab;
-      const response = await fetch(`/api/side-bets?status=${status}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setSideBets(data);
-      } else {
-        setError('Failed to load side bets');
-      }
-    } catch (error) {
-      console.error('Error fetching side bets:', error);
-      setError('Network error loading side bets');
-    } finally {
-      setLoading(false);
-    }
-  };
+// fetchSideBets replacement
+const fetchSideBets = async () => {
+  setLoading(true);
+  setError('');
+  try {
+    const statusParam = activeTab === 'all' ? '' : `?status=${encodeURIComponent(activeTab)}`;
+    const response = await fetch(`${API_BASE_URL}/api/side-bets${statusParam}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include'
+    });
 
+    if (response.ok) {
+      const data = await response.json();
+      setSideBets(data);
+    } else {
+      setError('Failed to load side bets');
+    }
+  } catch (err) {
+    console.error('Error fetching side bets:', err);
+    setError('Network error loading side bets');
+  } finally {
+    setLoading(false);
+  }
+};
   const joinSideBetByCode = async () => {
     if (inviteCode.length !== 6) {
       alert('Please enter a 6-character invite code');
@@ -50,14 +52,16 @@ function SideBetsPage() {
     }
 
     try {
-      const response = await fetch('/api/side-bets/join-by-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ invite_code: inviteCode })
-      });
+      // joinSideBetByCode replacement
+const response = await fetch(`${API_BASE_URL}/api/side-bets/join-by-code`, {
+  method: 'POST',
+  credentials: 'include',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify({ invite_code: inviteCode }),
+});
       
       if (response.ok) {
         alert('Successfully joined side bet!');
@@ -82,9 +86,10 @@ function SideBetsPage() {
 
   const viewResults = async (bet) => {
     try {
-      const response = await fetch(`/api/side-bets/${bet.id}/results`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await fetch(`${API_BASE_URL}/api/side-bets/${bet.id}/results`, {
+  headers: { Authorization: `Bearer ${token}` },
+  credentials: 'include'
+});
       
       if (response.ok) {
         const data = await response.json();
@@ -306,18 +311,19 @@ function SideBetCard({ bet, onCopyCode, copiedCode, onRefresh, onViewResults }) 
 
   const joinSideBet = async (optionId = null, predictionValue = null) => {
     try {
-      const response = await fetch(`/api/side-bets/${bet.id}/join`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          selected_option_id: optionId,
-          prediction_value: predictionValue
-        })
-      });
-      
+      // joinSideBet replacement
+const response = await fetch(`${API_BASE_URL}/api/side-bets/${bet.id}/join`, {
+  method: 'POST',
+  credentials: 'include',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    selected_option_id: optionId,
+    prediction_value: predictionValue
+  })
+});
       if (response.ok) {
         alert('Successfully joined side bet!');
         onRefresh();
