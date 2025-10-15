@@ -271,26 +271,23 @@ const response = await fetch(`${API_BASE_URL}/admin/side-bets`, {
   }
 };
 
-    const fetchSideBets = async () => {
-      setLoading(true);
-      try {
-        // closeSideBet replacement
-const response = await fetch(`${API_BASE_URL}/admin/side-bets/${sideBetId}/close`, {
-  method: 'POST',
-  headers: { Authorization: `Bearer ${token}` },
-  credentials: 'include'
-});
-
-        if (response.ok) {
-          const data = await response.json();
-          setSideBets(data);
-        }
-      } catch (error) {
-        console.error('Error fetching side bets:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+const fetchSideBets = async () => {
+  setLoading(true);
+  try {
+    // Fetch list of side bets (no sideBetId needed)
+    const response = await fetch(`${API_BASE_URL}/admin/side-bets`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include',
+    });
+    if (!response.ok) throw new Error(`Failed to fetch side bets (${response.status})`);
+    const data = await response.json();
+    setSideBets(data);
+  } catch (error) {
+    console.error('Error fetching side bets:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
     const closeSideBet = async (sideBetId) => {
       if (!confirm('Close this side bet? No new participants can join after closing.')) return;
@@ -719,24 +716,23 @@ const response = await fetch(`${API_BASE_URL}/admin/side-bets/${selectedBet.id}/
       }
     }, [selectedPool]);
 
-    const fetchPools = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/pools`, {
-       
-          headers: { Authorization: `Bearer ${token}` },
-        });
+const fetchPools = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/pools`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include',
+    });
+    if (!response.ok) throw new Error(`Failed to fetch pools (${response.status})`);
+    const data = await response.json();
+    setPools(data);
+    if (Array.isArray(data) && data.length > 0) {
+      setSelectedPool(data[0].id.toString());
+    }
+  } catch (error) {
+    console.error('Error fetching pools:', error);
+  }
+};
 
-        if (response.ok) {
-          const data = await response.json();
-          setPools(data);
-          if (data.length > 0) {
-            setSelectedPool(data[0].id.toString());
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching pools:', error);
-      }
-    };
 
     const fetchGames = async () => {
       if (!selectedPool) return;
