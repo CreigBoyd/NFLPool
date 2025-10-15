@@ -90,6 +90,8 @@ console.log('🔐 Environment validation complete\n');
 // APP INITIALIZATION
 const app = express();
 
+app.set('trust proxy', true);
+
 // Create HTTP server and PORT before initializing Socket.IO
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3001;
@@ -175,12 +177,14 @@ const authLimiter = rateLimit({
   message: { error: 'Too many attempts, please try again later', errorCode: 'RATE_LIMIT' },
   standardHeaders: true,
   legacyHeaders: false,
+   keyGenerator: (req) => req.ip
 });
 
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
   max: 100, // 100 requests per minute
-  message: { error: 'Too many requests, please slow down', errorCode: 'RATE_LIMIT' }
+  message: { error: 'Too many requests, please slow down', errorCode: 'RATE_LIMIT' },
+  keyGenerator: (req) => req.ip
 });
 
 // Apply rate limiting to all API routes

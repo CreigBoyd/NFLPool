@@ -1,21 +1,18 @@
-// API Configuration
-
-// Railway backend URL
+// api.js
 const RAILWAY_BACKEND_URL = 'https://nflpool-production.up.railway.app';
 
-// Check if we're in development or production
-const isDevelopment = import.meta.env.DEV;
+// Prefer a build-time override (Vite env). If you set VITE_API_BASE it wins.
+// Example (dev): VITE_API_BASE=http://localhost:3001/api vite
+// Example (prod, GH Pages build): VITE_API_BASE=https://your-railway-app.up.railway.app/api
+const envApiBase = import.meta.env.VITE_API_BASE;
+const isDev = import.meta.env.DEV;
 
-// Use localhost for development, Railway for production
-export const API_BASE_URL = isDevelopment 
-  ? 'http://localhost:3001/api' 
-  : `${RAILWAY_BACKEND_URL}/api`;
+export const API_BASE_URL = envApiBase
+  ? envApiBase.replace(/\/$/, '')
+  : (isDev ? 'http://localhost:3001/api' : `${RAILWAY_BACKEND_URL}/api`);
 
-export const WS_URL = isDevelopment 
-  ? 'http://localhost:3001' 
+export const WS_URL = isDev
+  ? 'http://localhost:3001'
   : RAILWAY_BACKEND_URL;
 
-export default {
-  API_BASE_URL,
-  WS_URL
-};
+export default { API_BASE_URL, WS_URL };
