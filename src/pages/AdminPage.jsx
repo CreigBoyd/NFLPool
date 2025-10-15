@@ -721,7 +721,8 @@ const response = await fetch(`${API_BASE_URL}/api/admin/side-bets/${selectedBet.
 
     const fetchPools = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/pools', {
+        const response = await fetch(`${API_BASE_URL}/pools`, {
+       
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -1080,8 +1081,8 @@ const response = await fetch(`${API_BASE_URL}/api/admin/side-bets/${selectedBet.
             gameDate: game.gameDate,
           })),
         };
-
-        const response = await fetch(`${API_BASE_URL}/admin/pools', {
+const response = await fetch(`${API_BASE_URL}/admin/pools`, {
+       
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
