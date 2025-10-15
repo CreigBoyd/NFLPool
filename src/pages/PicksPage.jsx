@@ -102,53 +102,52 @@ function PicksPage() {
   };
 
   const handleSubmit = async () => {
-    setSaving(true);
-    setError(null);
+  setSaving(true);
+  setError(null);
+  
+  const picksArray = Object.entries(picks).map(([gameId, pick]) => ({
+    gameId: parseInt(gameId),
+    selectedTeam: pick.selectedTeam,
+    confidencePoints: pick.confidencePoints || 1
+  }));
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/picks`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        poolId: poolId,
+        picks: picksArray
+      })
+    });
     
-    const picksArray = Object.entries(picks).map(([gameId, pick]) => ({
-      gameId: parseInt(gameId),
-      selectedTeam: pick.selectedTeam,
-      confidencePoints: pick.confidencePoints || 1
-    }));
+    const data = await response.json();
     
-    try {
-      const response = await fetch(`${API_BASE_URL}/picks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          poolId: poolId,  // Send as string
-          picks: picksArray
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        setSaved(true);
-        setExistingPicks(picksArray);
-        setTimeout(() => setSaved(false), 3000);
+    if (response.ok) {
+      setSaved(true);
+      setExistingPicks(picksArray);
+      setTimeout(() => setSaved(false), 3000);
+    } else {
+      if (data.errorCode === 'POOL_LOCKED') {
+        setError('⏰ Pool has already started - picks are locked!');
+      } else if (data.errorCode === 'INVALID_PICKS') {
+        setError('❌ Please select a team for all games');
+      } else if (data.errorCode === 'POOL_COMPLETED') {
+        setError('🏁 This pool has already ended - picks cannot be changed');
       } else {
-        // Handle different error types
-        if (data.errorCode === 'POOL_LOCKED') {
-          setError('⏰ Pool has already started - picks are locked!');
-        } else if (data.errorCode === 'INVALID_PICKS') {
-          setError('❌ Please select a team for all games');
-        } else if (data.errorCode === 'POOL_COMPLETED') {
-          setError('🏁 This pool has already ended - picks cannot be changed');
-        } else {
-          setError('❌ ' + data.error);
-        }
+        setError('❌ ' + data.error);
       }
-    } catch (error) {
-      console.error('Error saving picks:', error);
-      setError('❌ Network error - failed to save picks');
-    } finally {
-      setSaving(false);
     }
-  };
+  } catch (error) {
+    console.error('Error saving picks:', error);
+    setError('❌ Network error - failed to save picks');
+  } finally {
+    setSaving(false);
+  }
+};
 
   if (loading) {
     return (

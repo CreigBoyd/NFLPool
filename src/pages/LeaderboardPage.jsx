@@ -29,7 +29,8 @@ function LeaderboardPage() {
 
   const fetchPoolInfo = async () => {
     try {
-      const poolResponse = await fetch(`${API_BASE_URL}/pools', {
+      const res = await fetch(`${API_BASE_URL}/pools`, {
+     
         headers: { Authorization: `Bearer ${token}` },
       });
       

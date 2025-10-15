@@ -35,7 +35,8 @@ function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/profile', {
+      const res = await fetch(`${API_BASE_URL}/profile`, {
+   
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -55,7 +56,8 @@ function ProfilePage() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/my-picks', {
+        const res = await fetch(`${API_BASE_URL}/my-picks`, {
+     
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -90,7 +92,8 @@ function ProfilePage() {
 
   const fetchPickHistory = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/my-picks?limit=10', {
+      const res = await fetch(`${API_BASE_URL}/my-picks?limit=10`, {
+      
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -124,7 +127,8 @@ function ProfilePage() {
     setSaving(true);
     
     try {
-      const response = await fetch(`${API_BASE_URL}/profile', {
+      const res = await fetch(`${API_BASE_URL}/profile`, {
+      
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

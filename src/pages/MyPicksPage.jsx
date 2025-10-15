@@ -24,8 +24,8 @@ function MyPicksPage() {
         setRefreshing(true);
         showInfo('Refreshing your picks...');
       }
+      const res = await fetch(`${API_BASE_URL}/my-picks`, {
       
-      const response = await fetch(`${API_BASE_URL}/my-picks', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

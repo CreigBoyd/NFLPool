@@ -15,7 +15,8 @@ function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/forgot-password', {
+      const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+     
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ emailOrUsername }),

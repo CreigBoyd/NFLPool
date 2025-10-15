@@ -174,8 +174,8 @@ function PoolsPage() {
         setRefreshing(true);
         showInfo('Refreshing available pools...');
       }
-
-      const response = await fetch(`${API_BASE_URL}/pools', {
+const res = await fetch(`${API_BASE_URL}/pools`, {
+      
         headers: {
           'Authorization': `Bearer ${token}`,
         },
