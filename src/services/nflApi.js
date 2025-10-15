@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 const ESPN_NFL_API = 'https://site.web.api.espn.com/apis/site/v2/sports/football/nfl';
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useToast } from '../contexts/ToastContext';
+import { API_BASE_URL } from '../config/api';
 
 export default function ContactPage() {
   const { showSuccess, showError } = useToast();
@@ -34,7 +35,7 @@ export default function ContactPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/contact', {
+      const res = await fetch(`${API_BASE_URL}/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),

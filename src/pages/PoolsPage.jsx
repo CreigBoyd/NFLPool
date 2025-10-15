@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { Calendar, Users, Trophy, Clock, RefreshCw, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { API_BASE_URL } from '../config/api';
 
 function PoolCard({ pool, onMakePicksClick, onLeaderboardClick }) {
   const getPoolStatusMessage = (status) => {
@@ -174,7 +175,7 @@ function PoolsPage() {
         showInfo('Refreshing available pools...');
       }
 
-      const response = await fetch('/api/pools', {
+      const response = await fetch(`${API_BASE_URL}/pools', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

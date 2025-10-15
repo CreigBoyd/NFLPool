@@ -67,7 +67,7 @@ const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
 
   const updateUser = async (userId, updates) => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
 
   const deleteUser = async (userId) => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -296,7 +296,7 @@ const response = await fetch(`${API_BASE_URL}/api/admin/side-bets/${sideBetId}/c
       if (!confirm('Close this side bet? No new participants can join after closing.')) return;
 
       try {
-        const response = await fetch(`/api/admin/side-bets/${sideBetId}/close`, {
+        const response = await fetch(`${API_BASE_URL}/admin/side-bets/${sideBetId}/close`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -317,7 +317,7 @@ const response = await fetch(`${API_BASE_URL}/api/admin/side-bets/${sideBetId}/c
       setSelectedBet(sideBet);
       
       try {
-        const response = await fetch(`/api/side-bets/${sideBet.id}`, {
+        const response = await fetch(`${API_BASE_URL}/side-bets/${sideBet.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -721,7 +721,7 @@ const response = await fetch(`${API_BASE_URL}/api/admin/side-bets/${selectedBet.
 
     const fetchPools = async () => {
       try {
-        const response = await fetch('/api/pools', {
+        const response = await fetch(`${API_BASE_URL}/pools', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -742,7 +742,7 @@ const response = await fetch(`${API_BASE_URL}/api/admin/side-bets/${selectedBet.
 
       setLoadingScores(true);
       try {
-        const response = await fetch(`/api/pools/${selectedPool}/games`, {
+        const response = await fetch(`${API_BASE_URL}/pools/${selectedPool}/games`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -759,7 +759,7 @@ const response = await fetch(`${API_BASE_URL}/api/admin/side-bets/${selectedBet.
 
     const updateGameScore = async (gameId, scoreData) => {
       try {
-        const response = await fetch(`/api/admin/games/${gameId}/update-score`, {
+        const response = await fetch(`${API_BASE_URL}/admin/games/${gameId}/update-score`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1081,7 +1081,7 @@ const response = await fetch(`${API_BASE_URL}/api/admin/side-bets/${selectedBet.
           })),
         };
 
-        const response = await fetch('/api/admin/pools', {
+        const response = await fetch(`${API_BASE_URL}/admin/pools', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Trophy, Medal, Award, TrendingUp, Target, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 function LeaderboardPage() {
 
@@ -28,7 +29,7 @@ function LeaderboardPage() {
 
   const fetchPoolInfo = async () => {
     try {
-      const poolResponse = await fetch('/api/pools', {
+      const poolResponse = await fetch(`${API_BASE_URL}/pools', {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -49,8 +50,7 @@ function LeaderboardPage() {
     setError('');
 
     try {
-      const response = await fetch(
-        `/api/pools/${poolId}/leaderboard/paginated?page=${currentPage}&limit=${itemsPerPage}`,
+      const response = await fetch(`${API_BASE_URL}/pools/${poolId}/leaderboard/paginated?page=${currentPage}&limit=${itemsPerPage}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

@@ -538,7 +538,7 @@ function SideBetDetailsModal({ bet, onClose, onJoin }) {
 const fetchBetDetails = async (retries = 3) => {
   try {
     setLoading(true);
-    const response = await fetch(`/api/side-bets/${bet.id}`, {
+    const response = await fetch(`${API_BASE_URL}/side-bets/${bet.id}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     
@@ -837,7 +837,7 @@ function CreateSideBetModal({ onClose, onSuccess }) {
     setCreating(true);
 
     try {
-      const response = await fetch('/api/side-bets', {
+      const response = await fetch(`${API_BASE_URL}/side-bets', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

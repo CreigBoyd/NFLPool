@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { Calendar, Users, Trophy, Clock, Target, CheckCircle, XCircle, Clock3, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
+import { API_BASE_URL } from '../config/api';
 
 function MyPicksPage() {
   const [picksByPool, setPicksByPool] = useState([]);
@@ -24,7 +25,7 @@ function MyPicksPage() {
         showInfo('Refreshing your picks...');
       }
       
-      const response = await fetch('/api/my-picks', {
+      const response = await fetch(`${API_BASE_URL}/my-picks', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

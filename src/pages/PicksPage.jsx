@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ArrowLeft, CheckCircle, Lock, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
+import { API_BASE_URL } from '../config/api';
 
 function PicksPage() {
   const { poolId } = useParams();
@@ -27,13 +28,13 @@ function PicksPage() {
   const fetchGamesAndPicks = async () => {
     try {
       const [gamesResponse, picksResponse, poolResponse] = await Promise.all([
-        fetch(`/api/pools/${poolId}/games`, {
+        fetch(`${API_BASE_URL}/pools/${poolId}/games`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch(`/api/picks/${poolId}`, {
+        fetch(`${API_BASE_URL}/picks/${poolId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch(`/api/pools/${poolId}`, {
+        fetch(`${API_BASE_URL}/pools/${poolId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
@@ -111,7 +112,7 @@ function PicksPage() {
     }));
     
     try {
-      const response = await fetch('/api/picks', {
+      const response = await fetch(`${API_BASE_URL}/picks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

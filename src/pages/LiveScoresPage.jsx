@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Activity, Clock, Users, TrendingUp, BarChart3 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import io from 'socket.io-client';
+import { API_BASE_URL } from '../config/api';
 
 function LiveScoresPage() {
   const { poolId } = useParams();
@@ -47,10 +48,10 @@ function LiveScoresPage() {
   const fetchData = async () => {
     try {
       const [scoresResponse, statsResponse] = await Promise.all([
-        fetch(`/api/pools/${poolId}/live-scores`, {
+        fetch(`${API_BASE_URL}/pools/${poolId}/live-scores`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch(`/api/pools/${poolId}/stats`, {
+        fetch(`${API_BASE_URL}/pools/${poolId}/stats`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);

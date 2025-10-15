@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { User, Mail, Phone, MessageSquare, Bell, Save, Trophy, Target, Calendar } from 'lucide-react';
+import { API_BASE_URL } from '../config/api';
 
 function ProfilePage() {
   const { token } = useAuth();
@@ -34,7 +35,7 @@ function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch('/api/profile', {
+      const response = await fetch(`${API_BASE_URL}/profile', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -54,7 +55,7 @@ function ProfilePage() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/my-picks', {
+      const response = await fetch(`${API_BASE_URL}/my-picks', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -89,7 +90,7 @@ function ProfilePage() {
 
   const fetchPickHistory = async () => {
     try {
-      const response = await fetch('/api/my-picks?limit=10', {
+      const response = await fetch(`${API_BASE_URL}/my-picks?limit=10', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -123,7 +124,7 @@ function ProfilePage() {
     setSaving(true);
     
     try {
-      const response = await fetch('/api/profile', {
+      const response = await fetch(`${API_BASE_URL}/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
