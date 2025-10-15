@@ -6,7 +6,7 @@ import { Server } from 'socket.io';
 import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import cron from 'node-cron';
 import { initializeDatabase, pool, testConnection, cleanupExpiredTokens, closeDatabase } from './database.js';
 import { 
