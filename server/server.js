@@ -171,21 +171,9 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Rate limiting
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 requests per window
-  message: { error: 'Too many attempts, please try again later', errorCode: 'RATE_LIMIT' },
-  standardHeaders: true,
-  legacyHeaders: false,
-   keyGenerator: (req) => req.ip
-});
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, // 15 minutes max: 5, message: { error: 'Too many attempts, please try again later', errorCode: 'RATE_LIMIT' }, standardHeaders: true, legacyHeaders: false, keyGenerator: (req) => ipKeyGenerator(req) });
 
-const apiLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 100, // 100 requests per minute
-  message: { error: 'Too many requests, please slow down', errorCode: 'RATE_LIMIT' },
-  keyGenerator: (req) => req.ip
-});
+const apiLimiter = rateLimit({ windowMs: 1 * 60 * 1000, // 1 minute max: 100, message: { error: 'Too many requests, please slow down', errorCode: 'RATE_LIMIT' }, standardHeaders: true, legacyHeaders: false, keyGenerator: (req) => ipKeyGenerator(req) });
 
 // Apply rate limiting to all API routes
 app.use('/api/', apiLimiter);
