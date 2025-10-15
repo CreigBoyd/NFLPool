@@ -5,6 +5,35 @@ import {  CheckCircle } from 'lucide-react';
 import NFLDashboard from '../components/NFLDashboard';
 import { API_BASE_URL } from '../config/api';
 
+
+function buildUrl(path = '') {
+  // normalize so we don't accidentally create /api/api/...
+  const base = API_BASE_URL.replace(/\/$/, '');
+  const p = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${p}`;
+}
+
+export async function apiFetch(path, opts = {}) {
+  const url = buildUrl(path);
+  const response = await fetch(url, {
+    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+    credentials: opts.credentials ?? 'include',
+    method: opts.method ?? 'GET',
+    body: opts.body ?? undefined,
+    ...opts.fetchOptions
+  });
+
+  // Throw helpful error for non-2xx responses
+  if (!response.ok) {
+    const text = await response.text().catch(() => null);
+    throw new Error(text || `HTTP ${response.status}`);
+  }
+
+  // if no content (204), return null
+  if (response.status === 204) return null;
+  return response.json();
+}
+
 function AdminPage() {
   const [activeTab, setActiveTab] = useState('users');
   const [users, setUsers] = useState([]);
