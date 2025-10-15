@@ -27,7 +27,7 @@ const fetchSideBets = async () => {
   setError('');
   try {
     const statusParam = activeTab === 'all' ? '' : `?status=${encodeURIComponent(activeTab)}`;
-    const response = await fetch(`${API_BASE_URL}/api/side-bets${statusParam}`, {
+    const response = await fetch(`${API_BASE_URL}/side-bets${statusParam}`, {
       headers: { Authorization: `Bearer ${token}` },
       credentials: 'include'
     });
@@ -53,7 +53,7 @@ const fetchSideBets = async () => {
 
     try {
       // joinSideBetByCode replacement
-const response = await fetch(`${API_BASE_URL}/api/side-bets/join-by-code`, {
+const response = await fetch(`${API_BASE_URL}/side-bets/join-by-code`, {
   method: 'POST',
   credentials: 'include',
   headers: {
@@ -86,7 +86,7 @@ const response = await fetch(`${API_BASE_URL}/api/side-bets/join-by-code`, {
 
   const viewResults = async (bet) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/side-bets/${bet.id}/results`, {
+      const response = await fetch(`${API_BASE_URL}/side-bets/${bet.id}/results`, {
   headers: { Authorization: `Bearer ${token}` },
   credentials: 'include'
 });
@@ -312,7 +312,7 @@ function SideBetCard({ bet, onCopyCode, copiedCode, onRefresh, onViewResults }) 
   const joinSideBet = async (optionId = null, predictionValue = null) => {
     try {
       // joinSideBet replacement
-const response = await fetch(`${API_BASE_URL}/api/side-bets/${bet.id}/join`, {
+const response = await fetch(`${API_BASE_URL}/side-bets/${bet.id}/join`, {
   method: 'POST',
   credentials: 'include',
   headers: {

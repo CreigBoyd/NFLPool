@@ -26,7 +26,7 @@ function AdminPage() {
     setError('');
     try {
       // fetchUsers replacement
-const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
+const response = await fetch(`${API_BASE_URL}/admin/users`, {
   headers: { Authorization: `Bearer ${token}` },
   credentials: 'include'
 });
@@ -47,7 +47,7 @@ const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
   const updateUserStatus = async (userId, status) => {
     try {
       // fetchUsers replacement
-const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
+const response = await fetch(`${API_BASE_URL}/admin/users`, {
   headers: { Authorization: `Bearer ${token}` },
   credentials: 'include'
 });
@@ -256,7 +256,7 @@ const [betDetails, setBetDetails] = useState(null);
     const viewBetDetails = async (betId) => {
   try {
     // fetchSideBets replacement (AdminSideBets)
-const response = await fetch(`${API_BASE_URL}/api/admin/side-bets`, {
+const response = await fetch(`${API_BASE_URL}/admin/side-bets`, {
   headers: { Authorization: `Bearer ${token}` },
   credentials: 'include'
 });
@@ -275,7 +275,7 @@ const response = await fetch(`${API_BASE_URL}/api/admin/side-bets`, {
       setLoading(true);
       try {
         // closeSideBet replacement
-const response = await fetch(`${API_BASE_URL}/api/admin/side-bets/${sideBetId}/close`, {
+const response = await fetch(`${API_BASE_URL}/admin/side-bets/${sideBetId}/close`, {
   method: 'POST',
   headers: { Authorization: `Bearer ${token}` },
   credentials: 'include'
@@ -346,7 +346,7 @@ const response = await fetch(`${API_BASE_URL}/api/admin/side-bets/${sideBetId}/c
 
       try {
         // settleSideBet replacement
-const response = await fetch(`${API_BASE_URL}/api/admin/side-bets/${selectedBet.id}/settle`, {
+const response = await fetch(`${API_BASE_URL}/admin/side-bets/${selectedBet.id}/settle`, {
   method: 'POST',
   credentials: 'include',
   headers: {
@@ -376,7 +376,7 @@ const response = await fetch(`${API_BASE_URL}/api/admin/side-bets/${selectedBet.
       if (!confirm('Reopen this side bet? This will clear settlement data.')) return;
 
       try {
-        await fetch(`${API_BASE_URL}/api/admin/side-bets/${sideBetId}/reopen`, {
+        await fetch(`${API_BASE_URL}/admin/side-bets/${sideBetId}/reopen`, {
   method: 'POST',
   headers: { Authorization: `Bearer ${token}` },
   credentials: 'include'
@@ -397,7 +397,7 @@ const response = await fetch(`${API_BASE_URL}/api/admin/side-bets/${selectedBet.
       if (!confirm('Delete this side bet? This action cannot be undone.')) return;
 
       try {
-        await fetch(`${API_BASE_URL}/api/admin/side-bets/${sideBetId}`, {
+        await fetch(`${API_BASE_URL}/admin/side-bets/${sideBetId}`, {
   method: 'DELETE',
   headers: { Authorization: `Bearer ${token}` },
   credentials: 'include'
