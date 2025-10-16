@@ -22,29 +22,29 @@ export function AuthProvider({ children }) {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
     const storedRefreshToken = localStorage.getItem('refreshToken');
-
+    
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
       setRefreshToken(storedRefreshToken);
     }
-
+    
     setLoading(false);
   }, []);
 
-  // Auto-refresh token every 10 minutes
+  // Auto-refresh token before it expires (every 10 minutes)
   useEffect(() => {
     if (!refreshToken) return;
 
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       console.log('Auto-refreshing token...');
-      handleRefreshToken();
-    }, 10 * 60 * 1000);
+      await handleRefreshToken();
+    }, 10 * 60 * 1000); // Refresh every 10 minutes
 
     return () => clearInterval(interval);
   }, [refreshToken]);
 
-  // Persist token
+  // Persist tokens
   useEffect(() => {
     if (token) {
       localStorage.setItem('token', token);
@@ -53,7 +53,6 @@ export function AuthProvider({ children }) {
     }
   }, [token]);
 
-  // Persist user
   useEffect(() => {
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
@@ -62,7 +61,6 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
-  // Persist refresh token
   useEffect(() => {
     if (refreshToken) {
       localStorage.setItem('refreshToken', refreshToken);
@@ -84,17 +82,11 @@ export function AuthProvider({ children }) {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.token) {
-          setToken(data.token);
-          console.log('Token refreshed successfully');
-          return true;
-        } else {
-          console.warn('No token returned during refresh');
-          logout();
-          return false;
-        }
+        setToken(data.token);
+        console.log('Token refreshed successfully');
+        return true;
       } else {
-        console.warn('Token refresh failed, logging out');
+        console.log('Token refresh failed, logging out');
         logout();
         return false;
       }
@@ -105,25 +97,31 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (username, password) => {
     try {
       console.log('Logging in to:', `${API_BASE_URL}/auth/login`);
+      
+      await fetch(`${API_BASE_URL}/auth/login`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: userEmail,
+    password: userPassword,
+  }),
+});
 
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
+      
       const data = await response.json();
-
-      if (response.ok && data.success) {
+      
+      if (data.success) {
         setToken(data.token);
         setRefreshToken(data.refreshToken);
         setUser(data.user);
         return { success: true };
       } else {
-        return { success: false, error: data.error || 'Invalid credentials' };
+        return { success: false, error: data.error };
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -134,19 +132,19 @@ export function AuthProvider({ children }) {
   const register = async (username, email, password) => {
     try {
       console.log('Registering at:', `${API_BASE_URL}/auth/register`);
-
+      
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password }),
       });
-
+      
       const data = await response.json();
-
+      
       if (response.ok) {
         return { success: true, message: data.message };
       } else {
-        return { success: false, error: data.error || 'Registration failed' };
+        return { success: false, error: data.error };
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -173,7 +171,7 @@ export function AuthProvider({ children }) {
     logout,
     isAdmin,
     loading,
-    refreshToken: handleRefreshToken,
+    refreshToken: handleRefreshToken // Export for manual refresh
   };
 
   return (
