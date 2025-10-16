@@ -726,18 +726,19 @@ const fetchPools = async () => {
     });
 
     if (response.ok) {
-      const data = await response.json();
+      const data = await response.json(); // ✅ response is now defined
       setPools(data);
       if (data.length > 0) {
         setSelectedPool(data[0].id.toString());
       }
     } else {
-      console.error('Failed to fetch pools: ', response.status);
+      console.error('Failed to fetch pools:', response.status);
     }
   } catch (error) {
     console.error('Error fetching pools:', error);
   }
 };
+
 
 
     const fetchGames = async () => {
