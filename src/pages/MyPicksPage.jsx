@@ -24,14 +24,13 @@ function MyPicksPage() {
         setRefreshing(true);
         showInfo('Refreshing your picks...');
       }
-      const res = await fetch(`${API_BASE_URL}/my-picks`, {
-      
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (response.ok) {
+      const response = await fetch(`${API_BASE_URL}/my-picks`, {
+  headers: {
+    'Authorization': `Bearer ${token}`,
+  },
+});
+
+if (response.ok) {
         const data = await response.json();
         setPicksByPool(data);
         setError('');
