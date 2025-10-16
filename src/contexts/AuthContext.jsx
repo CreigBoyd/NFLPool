@@ -22,29 +22,29 @@ export function AuthProvider({ children }) {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
     const storedRefreshToken = localStorage.getItem('refreshToken');
-    
+
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
       setRefreshToken(storedRefreshToken);
     }
-    
+
     setLoading(false);
   }, []);
 
-  // Auto-refresh token before it expires (every 10 minutes)
+  // Auto-refresh token every 10 minutes
   useEffect(() => {
     if (!refreshToken) return;
 
-    const interval = setInterval(async () => {
+    const interval = setInterval(() => {
       console.log('Auto-refreshing token...');
-      await handleRefreshToken();
-    }, 10 * 60 * 1000); // Refresh every 10 minutes
+      handleRefreshToken();
+    }, 10 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [refreshToken]);
 
-  // Persist tokens
+  // Persist token
   useEffect(() => {
     if (token) {
       localStorage.setItem('token', token);
@@ -53,6 +53,7 @@ export function AuthProvider({ children }) {
     }
   }, [token]);
 
+  // Persist user
   useEffect(() => {
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
@@ -61,6 +62,7 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
+  // Persist refresh token
   useEffect(() => {
     if (refreshToken) {
       localStorage.setItem('refreshToken', refreshToken);
@@ -82,11 +84,17 @@ export function AuthProvider({ children }) {
 
       if (response.ok) {
         const data = await response.json();
-        setToken(data.token);
-        console.log('Token refreshed successfully');
-        return true;
+        if (data.token) {
+          setToken(data.token);
+          console.log('Token refreshed successfully');
+          return true;
+        } else {
+          console.warn('No token returned during refresh');
+          logout();
+          return false;
+        }
       } else {
-        console.log('Token refresh failed, logging out');
+        console.warn('Token refresh failed, logging out');
         logout();
         return false;
       }
@@ -97,25 +105,25 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const login = async (username, password) => {
+  const login = async (email, password) => {
     try {
       console.log('Logging in to:', `${API_BASE_URL}/auth/login`);
-      
+
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       });
-      
+
       const data = await response.json();
-      
-      if (data.success) {
+
+      if (response.ok && data.success) {
         setToken(data.token);
         setRefreshToken(data.refreshToken);
         setUser(data.user);
         return { success: true };
       } else {
-        return { success: false, error: data.error };
+        return { success: false, error: data.error || 'Invalid credentials' };
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -126,19 +134,19 @@ export function AuthProvider({ children }) {
   const register = async (username, email, password) => {
     try {
       console.log('Registering at:', `${API_BASE_URL}/auth/register`);
-      
+
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password }),
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok) {
         return { success: true, message: data.message };
       } else {
-        return { success: false, error: data.error };
+        return { success: false, error: data.error || 'Registration failed' };
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -165,7 +173,7 @@ export function AuthProvider({ children }) {
     logout,
     isAdmin,
     loading,
-    refreshToken: handleRefreshToken // Export for manual refresh
+    refreshToken: handleRefreshToken,
   };
 
   return (
