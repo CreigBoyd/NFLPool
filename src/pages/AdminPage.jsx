@@ -5,35 +5,6 @@ import {  CheckCircle } from 'lucide-react';
 import NFLDashboard from '../components/NFLDashboard';
 import { API_BASE_URL } from '../config/api';
 
-
-function buildUrl(path = '') {
-  // normalize so we don't accidentally create /api/api/...
-  const base = API_BASE_URL.replace(/\/$/, '');
-  const p = path.startsWith('/') ? path : `/${path}`;
-  return `${base}${p}`;
-}
-
-export async function apiFetch(path, opts = {}) {
-  const url = buildUrl(path);
-  const response = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
-    credentials: opts.credentials ?? 'include',
-    method: opts.method ?? 'GET',
-    body: opts.body ?? undefined,
-    ...opts.fetchOptions
-  });
-
-  // Throw helpful error for non-2xx responses
-  if (!response.ok) {
-    const text = await response.text().catch(() => null);
-    throw new Error(text || `HTTP ${response.status}`);
-  }
-
-  // if no content (204), return null
-  if (response.status === 204) return null;
-  return response.json();
-}
-
 function AdminPage() {
   const [activeTab, setActiveTab] = useState('users');
   const [users, setUsers] = useState([]);
@@ -300,23 +271,26 @@ const response = await fetch(`${API_BASE_URL}/admin/side-bets`, {
   }
 };
 
-const fetchSideBets = async () => {
-  setLoading(true);
-  try {
-    // Fetch list of side bets (no sideBetId needed)
-    const response = await fetch(`${API_BASE_URL}/admin/side-bets`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: 'include',
-    });
-    if (!response.ok) throw new Error(`Failed to fetch side bets (${response.status})`);
-    const data = await response.json();
-    setSideBets(data);
-  } catch (error) {
-    console.error('Error fetching side bets:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+    const fetchSideBets = async () => {
+      setLoading(true);
+      try {
+        // closeSideBet replacement
+const response = await fetch(`${API_BASE_URL}/admin/side-bets/${sideBetId}/close`, {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${token}` },
+  credentials: 'include'
+});
+
+        if (response.ok) {
+          const data = await response.json();
+          setSideBets(data);
+        }
+      } catch (error) {
+        console.error('Error fetching side bets:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     const closeSideBet = async (sideBetId) => {
       if (!confirm('Close this side bet? No new participants can join after closing.')) return;
@@ -749,13 +723,16 @@ const fetchPools = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/pools`, {
       headers: { Authorization: `Bearer ${token}` },
-      credentials: 'include',
     });
-    if (!response.ok) throw new Error(`Failed to fetch pools (${response.status})`);
-    const data = await response.json();
-    setPools(data);
-    if (Array.isArray(data) && data.length > 0) {
-      setSelectedPool(data[0].id.toString());
+
+    if (response.ok) {
+      const data = await response.json();
+      setPools(data);
+      if (data.length > 0) {
+        setSelectedPool(data[0].id.toString());
+      }
+    } else {
+      console.error('Failed to fetch pools: ', response.status);
     }
   } catch (error) {
     console.error('Error fetching pools:', error);
