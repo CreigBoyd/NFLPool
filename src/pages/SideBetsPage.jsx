@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Users, Clock, DollarSign, Lock, Unlock, Copy, Check, TrendingUp, Award } from 'lucide-react';
+import { Plus, Users, Clock, DollarSign, Lock, Unlock, Copy, Check, TrendingUp, Award, X, AlertTriangle, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
-import { API_BASE_URL } from '../config/api'; // adjust path if file is in a different folder
+import { API_BASE_URL } from '../config/api';
 
 function SideBetsPage() {
   const { token } = useAuth();
@@ -21,30 +21,30 @@ function SideBetsPage() {
     fetchSideBets();
   }, [activeTab]);
 
-// fetchSideBets replacement
-const fetchSideBets = async () => {
-  setLoading(true);
-  setError('');
-  try {
-    const statusParam = activeTab === 'all' ? '' : `?status=${encodeURIComponent(activeTab)}`;
-    const response = await fetch(`${API_BASE_URL}/side-bets${statusParam}`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: 'include'
-    });
+  const fetchSideBets = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const statusParam = activeTab === 'all' ? '' : `?status=${encodeURIComponent(activeTab)}`;
+      const response = await fetch(`${API_BASE_URL}/side-bets${statusParam}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include'
+      });
 
-    if (response.ok) {
-      const data = await response.json();
-      setSideBets(data);
-    } else {
-      setError('Failed to load side bets');
+      if (response.ok) {
+        const data = await response.json();
+        setSideBets(data);
+      } else {
+        setError('Failed to load side bets');
+      }
+    } catch (err) {
+      console.error('Error fetching side bets:', err);
+      setError('Network error loading side bets');
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error('Error fetching side bets:', err);
-    setError('Network error loading side bets');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
   const joinSideBetByCode = async () => {
     if (inviteCode.length !== 6) {
       alert('Please enter a 6-character invite code');
@@ -52,16 +52,15 @@ const fetchSideBets = async () => {
     }
 
     try {
-      // joinSideBetByCode replacement
-const response = await fetch(`${API_BASE_URL}/side-bets/join-by-code`, {
-  method: 'POST',
-  credentials: 'include',
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  },
-  body: JSON.stringify({ invite_code: inviteCode }),
-});
+      const response = await fetch(`${API_BASE_URL}/side-bets/join-by-code`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ invite_code: inviteCode }),
+      });
       
       if (response.ok) {
         alert('Successfully joined side bet!');
@@ -87,9 +86,9 @@ const response = await fetch(`${API_BASE_URL}/side-bets/join-by-code`, {
   const viewResults = async (bet) => {
     try {
       const response = await fetch(`${API_BASE_URL}/side-bets/${bet.id}/results`, {
-  headers: { Authorization: `Bearer ${token}` },
-  credentials: 'include'
-});
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include'
+      });
       
       if (response.ok) {
         const data = await response.json();
@@ -104,20 +103,17 @@ const response = await fetch(`${API_BASE_URL}/side-bets/join-by-code`, {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'open': return 'bg-green-100 text-green-800';
-      case 'closed': return 'bg-yellow-100 text-yellow-800';
-      case 'settled': return 'bg-blue-100 text-blue-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-neutral-100 text-neutral-800';
-    }
-  };
-
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      <div className="min-h-screen p-6 flex justify-center items-center" style={{
+        background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%)',
+      }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-yellow-400 mx-auto mb-4" style={{
+            borderTopColor: '#d4af37',
+          }}></div>
+          <p className="text-yellow-400 font-bold uppercase">Loading Side Bets...</p>
+        </div>
       </div>
     );
   }
@@ -169,8 +165,11 @@ const response = await fetch(`${API_BASE_URL}/side-bets/join-by-code`, {
         </div>
 
         {error && (
-          <div className="bg-red-600 border-2 border-red-800 text-white px-4 py-3 rounded-lg font-bold mb-6">
-            {error}
+          <div className="rounded-xl p-4 mb-6" style={{
+            background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
+            border: '2px solid #000',
+          }}>
+            <p className="text-white font-bold text-center">{error}</p>
           </div>
         )}
 
@@ -228,15 +227,21 @@ const response = await fetch(`${API_BASE_URL}/side-bets/join-by-code`, {
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {sideBets.map((bet) => (
-              <SideBetCard
+            {sideBets.map((bet, index) => (
+              <div
                 key={bet.id}
-                bet={bet}
-                onCopyCode={copyInviteCode}
-                copiedCode={copiedCode}
-                onRefresh={fetchSideBets}
-                onViewResults={viewResults}
-              />
+                style={{
+                  animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`
+                }}
+              >
+                <SideBetCard
+                  bet={bet}
+                  onCopyCode={copyInviteCode}
+                  copiedCode={copiedCode}
+                  onRefresh={fetchSideBets}
+                  onViewResults={viewResults}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -251,41 +256,89 @@ const response = await fetch(`${API_BASE_URL}/side-bets/join-by-code`, {
       )}
 
       {showJoinModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold text-neutral-900 mb-4">Join with Invite Code</h2>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Invite Code
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50" style={{
+          backdropFilter: 'blur(4px)',
+        }}>
+          <div className="rounded-xl w-full max-w-md overflow-hidden" style={{
+            background: 'linear-gradient(145deg, #1a1f3a 0%, #0f1729 100%)',
+            border: '3px solid #d4af37',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
+          }}>
+            <div className="p-6 border-b-2" style={{
+              background: 'linear-gradient(90deg, #2c5f2d 0%, #1a3a1b 50%, #2c5f2d 100%)',
+              borderColor: '#d4af37',
+            }}>
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-black text-white" style={{
+                  textShadow: '2px 2px 0 #000',
+                  fontFamily: 'Impact, sans-serif',
+                }}>JOIN WITH CODE</h2>
+                <button
+                  onClick={() => setShowJoinModal(false)}
+                  className="p-2 rounded-lg transition-all"
+                  style={{
+                    background: 'rgba(220, 38, 38, 0.8)',
+                    color: '#fff',
+                  }}
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <label className="block text-yellow-400 text-sm font-black uppercase mb-3">
+                Enter 6-Character Invite Code
               </label>
               <input
                 type="text"
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                placeholder="Enter 6-character code"
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="ABC123"
                 maxLength={6}
+                className="w-full px-4 py-4 rounded-lg font-black text-2xl text-white text-center placeholder-slate-500 tracking-widest"
+                style={{
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  border: '2px solid #d4af37',
+                }}
               />
             </div>
-            
-            <div className="flex space-x-3">
-              <button
-                onClick={() => {
-                  setShowJoinModal(false);
-                  setInviteCode('');
-                }}
-                className="flex-1 bg-neutral-100 text-neutral-700 px-4 py-2 rounded-lg font-medium hover:bg-neutral-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={joinSideBetByCode}
-                disabled={inviteCode.length !== 6}
-                className="flex-1 bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50"
-              >
-                Join
-              </button>
+
+            <div className="p-6 border-t-2" style={{
+              background: 'rgba(0, 0, 0, 0.4)',
+              borderColor: '#d4af37',
+            }}>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowJoinModal(false);
+                    setInviteCode('');
+                  }}
+                  className="flex-1 py-3 rounded-lg font-black uppercase text-sm transition-all"
+                  style={{
+                    background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+                    color: '#fff',
+                    border: '2px solid #374151',
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={joinSideBetByCode}
+                  disabled={inviteCode.length !== 6}
+                  className="flex-1 py-3 rounded-lg font-black uppercase text-sm transition-all disabled:opacity-50"
+                  style={{
+                    background: inviteCode.length === 6
+                      ? 'linear-gradient(135deg, #d4af37 0%, #b8941f 100%)'
+                      : 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+                    color: inviteCode.length === 6 ? '#000' : '#fff',
+                    border: '2px solid #000',
+                    boxShadow: inviteCode.length === 6 ? '0 4px 15px rgba(212, 175, 55, 0.4)' : 'none',
+                  }}
+                >
+                  Join Bet
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -300,30 +353,42 @@ const response = await fetch(`${API_BASE_URL}/side-bets/join-by-code`, {
           }}
         />
       )}
+
+      <style>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }
 
-// Side Bet Card Component with FOOTBALL STYLING
+// Side Bet Card Component
 function SideBetCard({ bet, onCopyCode, copiedCode, onRefresh, onViewResults }) {
   const { token } = useAuth();
   const [showDetails, setShowDetails] = useState(false);
 
   const joinSideBet = async (optionId = null, predictionValue = null) => {
     try {
-      // joinSideBet replacement
-const response = await fetch(`${API_BASE_URL}/side-bets/${bet.id}/join`, {
-  method: 'POST',
-  credentials: 'include',
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  },
-  body: JSON.stringify({
-    selected_option_id: optionId,
-    prediction_value: predictionValue
-  })
-});
+      const response = await fetch(`${API_BASE_URL}/side-bets/${bet.id}/join`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          selected_option_id: optionId,
+          prediction_value: predictionValue
+        })
+      });
       if (response.ok) {
         alert('Successfully joined side bet!');
         onRefresh();
@@ -372,7 +437,6 @@ const response = await fetch(`${API_BASE_URL}/side-bets/${bet.id}/join`, {
       border: '3px solid #d4af37',
       boxShadow: '0 10px 30px rgba(212, 175, 55, 0.2)',
     }}>
-      {/* Card Header */}
       <div className="p-5 border-b-2" style={{
         background: 'linear-gradient(90deg, #2c5f2d 0%, #1a3a1b 50%, #2c5f2d 100%)',
         borderColor: '#d4af37',
@@ -406,7 +470,6 @@ const response = await fetch(`${API_BASE_URL}/side-bets/${bet.id}/join`, {
         }}>{bet.title}</h3>
       </div>
       
-      {/* Card Body */}
       <div className="p-5">
         <p className="text-slate-300 text-sm mb-4 line-clamp-2">{bet.description}</p>
         
@@ -438,7 +501,6 @@ const response = await fetch(`${API_BASE_URL}/side-bets/${bet.id}/join`, {
           </div>
         </div>
         
-        {/* Action Buttons */}
         <div className="space-y-3">
           {!bet.user_participating && bet.status === 'open' && (
             <button
@@ -480,7 +542,6 @@ const response = await fetch(`${API_BASE_URL}/side-bets/${bet.id}/join`, {
             </button>
           )}
           
-          {/* Invite Code Section */}
           {bet.is_private && bet.invite_code && bet.is_creator && (
             <div className="p-4 rounded-lg" style={{
               background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(184, 148, 31, 0.15) 100%)',
@@ -522,8 +583,7 @@ const response = await fetch(`${API_BASE_URL}/side-bets/${bet.id}/join`, {
   );
 }
 
-// Keep all other components the same (SideBetDetailsModal, ResultsModal, CreateSideBetModal)
-// Side Bet Details Modal Component with PROPER OPTIONS FETCHING
+// Side Bet Details Modal Component
 function SideBetDetailsModal({ bet, onClose, onJoin }) {
   const { token } = useAuth();
   const [selectedOption, setSelectedOption] = useState(null);
@@ -535,33 +595,33 @@ function SideBetDetailsModal({ bet, onClose, onJoin }) {
     fetchBetDetails();
   }, []);
 
-const fetchBetDetails = async (retries = 3) => {
-  try {
-    setLoading(true);
-    const response = await fetch(`${API_BASE_URL}/side-bets/${bet.id}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+  const fetchBetDetails = async (retries = 3) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/side-bets/${bet.id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setBetDetails(data);
+    } catch (error) {
+      console.error('Error fetching bet details:', error);
+      
+      if (retries > 0) {
+        console.log(`Retrying... (${retries} attempts left)`);
+        setTimeout(() => fetchBetDetails(retries - 1), 1000);
+      } else {
+        alert('Failed to load bet details after multiple attempts');
+        onClose();
+      }
+    } finally {
+      setLoading(false);
     }
-    
-    const data = await response.json();
-    setBetDetails(data);
-  } catch (error) {
-    console.error('Error fetching bet details:', error);
-    
-    if (retries > 0) {
-      console.log(`Retrying... (${retries} attempts left)`);
-      setTimeout(() => fetchBetDetails(retries - 1), 1000);
-    } else {
-      alert('Failed to load bet details after multiple attempts');
-      onClose();
-    }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleJoin = () => {
     if ((betDetails.bet_type === 'multiple_choice' || betDetails.bet_type === 'binary') && !selectedOption) {
@@ -580,10 +640,13 @@ const fetchBetDetails = async (retries = 3) => {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-lg p-6 w-full max-w-md">
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50">
+        <div className="rounded-xl p-8" style={{
+          background: 'linear-gradient(145deg, #1a1f3a 0%, #0f1729 100%)',
+          border: '3px solid #d4af37',
+        }}>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-yellow-400"></div>
           </div>
         </div>
       </div>
@@ -595,73 +658,116 @@ const fetchBetDetails = async (retries = 3) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold text-neutral-900 mb-4">{betDetails.title}</h2>
-        <p className="text-neutral-600 mb-6">{betDetails.description}</p>
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50" style={{
+      backdropFilter: 'blur(4px)',
+    }}>
+      <div className="rounded-xl w-full max-w-md overflow-hidden max-h-[90vh]" style={{
+        background: 'linear-gradient(145deg, #1a1f3a 0%, #0f1729 100%)',
+        border: '3px solid #d4af37',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
+      }}>
+        <div className="p-6 border-b-2" style={{
+          background: 'linear-gradient(90deg, #2c5f2d 0%, #1a3a1b 50%, #2c5f2d 100%)',
+          borderColor: '#d4af37',
+        }}>
+          <h2 className="text-2xl font-black text-white" style={{
+            textShadow: '2px 2px 0 #000',
+            fontFamily: 'Impact, sans-serif',
+          }}>{betDetails.title}</h2>
+        </div>
         
-        {(betDetails.bet_type === 'multiple_choice' || betDetails.bet_type === 'binary') && betDetails.options && (
-          <div className="space-y-3 mb-6">
-            <h3 className="font-medium text-neutral-900">Select your choice:</h3>
-            <div className="space-y-2">
-              {betDetails.options.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => setSelectedOption(option.id)}
-                  className={`w-full p-3 border rounded-lg text-left transition-all ${
-                    selectedOption === option.id 
-                      ? 'border-primary-500 bg-primary-50 ring-2 ring-primary-200' 
-                      : 'border-neutral-300 hover:border-primary-300'
-                  }`}
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">{option.option_text}</span>
-                    {option.odds && (
-                      <span className="text-sm text-neutral-600">Odds: {option.odds}</span>
-                    )}
-                  </div>
-                </button>
-              ))}
+        <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 200px)' }}>
+          <p className="text-slate-300 font-semibold mb-6">{betDetails.description}</p>
+          
+          {(betDetails.bet_type === 'multiple_choice' || betDetails.bet_type === 'binary') && betDetails.options && (
+            <div className="space-y-3 mb-6">
+              <h3 className="font-black text-yellow-400 uppercase text-sm">Select your choice:</h3>
+              <div className="space-y-2">
+                {betDetails.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => setSelectedOption(option.id)}
+                    className="w-full p-4 rounded-lg text-left transition-all font-bold"
+                    style={{
+                      background: selectedOption === option.id
+                        ? 'linear-gradient(135deg, #d4af37 0%, #b8941f 100%)'
+                        : 'rgba(0, 0, 0, 0.4)',
+                      border: selectedOption === option.id ? '2px solid #000' : '2px solid #4b5563',
+                      color: selectedOption === option.id ? '#000' : '#fff',
+                    }}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span>{option.option_text}</span>
+                      {option.odds && (
+                        <span className="text-sm">Odds: {option.odds}</span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+          
+          {(betDetails.bet_type === 'prediction' || betDetails.bet_type === 'over_under') && (
+            <div className="mb-6">
+              <label className="block text-yellow-400 text-sm font-black uppercase mb-2">
+                Your Prediction
+              </label>
+              <input
+                type="number"
+                value={predictionValue}
+                onChange={(e) => setPredictionValue(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg font-semibold text-white placeholder-slate-500"
+                placeholder="Enter your prediction"
+                style={{
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  border: '2px solid #4b5563',
+                }}
+              />
+            </div>
+          )}
+          
+          {betDetails.entry_fee > 0 && (
+            <div className="rounded-lg p-4 mb-4" style={{
+              background: 'rgba(245, 158, 11, 0.2)',
+              border: '2px solid #f59e0b',
+            }}>
+              <p className="text-yellow-400 font-bold">
+                <strong>Entry Fee:</strong> ${betDetails.entry_fee}
+              </p>
+            </div>
+          )}
+        </div>
         
-        {(betDetails.bet_type === 'prediction' || betDetails.bet_type === 'over_under') && (
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Your Prediction
-            </label>
-            <input
-              type="number"
-              value={predictionValue}
-              onChange={(e) => setPredictionValue(e.target.value)}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              placeholder="Enter your prediction"
-            />
+        <div className="p-6 border-t-2" style={{
+          background: 'rgba(0, 0, 0, 0.4)',
+          borderColor: '#d4af37',
+        }}>
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 py-3 rounded-lg font-black uppercase text-sm transition-all"
+              style={{
+                background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+                color: '#fff',
+                border: '2px solid #374151',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleJoin}
+              className="flex-1 py-3 rounded-lg font-black uppercase text-sm transition-all"
+              style={{
+                background: 'linear-gradient(135deg, #d4af37 0%, #b8941f 100%)',
+                color: '#000',
+                border: '2px solid #000',
+                boxShadow: '0 4px 15px rgba(212, 175, 55, 0.4)',
+              }}
+            >
+              Join Bet
+            </button>
           </div>
-        )}
-        
-        {betDetails.entry_fee > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-            <p className="text-sm text-yellow-800">
-              <strong>Entry Fee:</strong> ${betDetails.entry_fee}
-            </p>
-          </div>
-        )}
-        
-        <div className="flex space-x-3">
-          <button
-            onClick={onClose}
-            className="flex-1 bg-neutral-100 text-neutral-700 px-4 py-2 rounded-lg font-medium hover:bg-neutral-200"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleJoin}
-            className="flex-1 bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700"
-          >
-            Join Bet
-          </button>
         </div>
       </div>
     </div>
@@ -673,91 +779,164 @@ function ResultsModal({ results, onClose }) {
   const { sideBet, winners } = results;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-neutral-900">Bet Results</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50" style={{
+      backdropFilter: 'blur(4px)',
+    }}>
+      <div className="rounded-xl w-full max-w-2xl overflow-hidden max-h-[90vh]" style={{
+        background: 'linear-gradient(145deg, #1a1f3a 0%, #0f1729 100%)',
+        border: '3px solid #d4af37',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
+      }}>
+        <div className="p-6 border-b-2" style={{
+          background: 'linear-gradient(90deg, #2c5f2d 0%, #1a3a1b 50%, #2c5f2d 100%)',
+          borderColor: '#d4af37',
+        }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Award className="h-8 w-8 text-yellow-400" />
+              <h2 className="text-2xl font-black text-white" style={{
+                textShadow: '2px 2px 0 #000',
+                fontFamily: 'Impact, sans-serif',
+              }}>BET RESULTS</h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg transition-all"
+              style={{
+                background: 'rgba(220, 38, 38, 0.8)',
+                color: '#fff',
+              }}
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 180px)' }}>
+          <div className="rounded-lg p-6 mb-6" style={{
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)',
+            border: '2px solid #3b82f6',
+          }}>
+            <h3 className="text-xl font-black text-white mb-2" style={{
+              fontFamily: 'Impact, sans-serif',
+            }}>{sideBet.title}</h3>
+            <p className="text-slate-300 font-semibold mb-4">{sideBet.description}</p>
+            
+            {sideBet.winning_option && (
+              <div className="rounded-lg p-4 mb-4" style={{
+                background: 'rgba(16, 185, 129, 0.2)',
+                border: '2px solid #10b981',
+              }}>
+                <p className="text-sm text-slate-300 font-semibold mb-1">Winning Option:</p>
+                <p className="text-lg font-black text-green-400">{sideBet.winning_option.option_text}</p>
+              </div>
+            )}
+            
+            {sideBet.actual_result && (
+              <div className="rounded-lg p-4" style={{
+                background: 'rgba(16, 185, 129, 0.2)',
+                border: '2px solid #10b981',
+              }}>
+                <p className="text-sm text-slate-300 font-semibold mb-1">Final Result:</p>
+                <p className="text-lg font-black text-green-400">{sideBet.actual_result}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="mb-6">
+            <h3 className="text-xl font-black text-yellow-400 mb-4 flex items-center uppercase" style={{
+              fontFamily: 'Impact, sans-serif',
+            }}>
+              <Award className="h-6 w-6 mr-2" />
+              Winners ({winners.length})
+            </h3>
+            
+            {winners.length === 0 ? (
+              <div className="text-center py-8 rounded-lg" style={{
+                background: 'rgba(0, 0, 0, 0.4)',
+                border: '2px solid #4b5563',
+              }}>
+                <p className="text-slate-400 font-semibold">No winners for this bet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {winners.map((winner, index) => {
+                  const getRankStyle = (rank) => {
+                    switch (rank) {
+                      case 0:
+                        return { bg: 'linear-gradient(135deg, #d4af37 0%, #b8941f 100%)', color: '#000', badge: '#fbbf24' };
+                      case 1:
+                        return { bg: 'linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%)', color: '#000', badge: '#d1d5db' };
+                      case 2:
+                        return { bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#000', badge: '#f59e0b' };
+                      default:
+                        return { bg: 'linear-gradient(135deg, #1a1f3a 0%, #0f1729 100%)', color: '#fff', badge: '#3b82f6' };
+                    }
+                  };
+                  
+                  const rankStyle = getRankStyle(index);
+                  
+                  return (
+                    <div
+                      key={winner.id}
+                      className="flex items-center justify-between rounded-lg p-4"
+                      style={{
+                        background: rankStyle.bg,
+                        border: '2px solid #000',
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center font-black text-lg" style={{
+                          background: rankStyle.badge,
+                          color: '#000',
+                          border: '2px solid #000',
+                        }}>
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-black" style={{ color: rankStyle.color }}>{winner.username}</p>
+                          {winner.option_text && (
+                            <p className="text-sm font-semibold opacity-80" style={{ color: rankStyle.color }}>
+                              Selected: {winner.option_text}
+                            </p>
+                          )}
+                          {winner.prediction_value && (
+                            <p className="text-sm font-semibold opacity-80" style={{ color: rankStyle.color }}>
+                              Predicted: {winner.prediction_value}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-black text-green-400">
+                          ${parseFloat(winner.potential_payout).toFixed(2)}
+                        </p>
+                        <p className="text-xs font-bold opacity-80" style={{ color: rankStyle.color }}>PAYOUT</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="p-6 border-t-2" style={{
+          background: 'rgba(0, 0, 0, 0.4)',
+          borderColor: '#d4af37',
+        }}>
           <button
             onClick={onClose}
-            className="text-neutral-500 hover:text-neutral-700"
+            className="w-full py-3 rounded-lg font-black uppercase text-sm transition-all"
+            style={{
+              background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+              color: '#fff',
+              border: '2px solid #374151',
+            }}
           >
-            <span className="text-2xl">&times;</span>
+            Close
           </button>
         </div>
-
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 mb-6">
-          <h3 className="text-lg font-semibold text-neutral-900 mb-2">{sideBet.title}</h3>
-          <p className="text-neutral-600 mb-4">{sideBet.description}</p>
-          
-          {sideBet.winning_option && (
-            <div className="bg-white rounded-lg p-4 mb-4">
-              <p className="text-sm text-neutral-600 mb-1">Winning Option:</p>
-              <p className="text-lg font-bold text-green-600">{sideBet.winning_option.option_text}</p>
-            </div>
-          )}
-          
-          {sideBet.actual_result && (
-            <div className="bg-white rounded-lg p-4">
-              <p className="text-sm text-neutral-600 mb-1">Final Result:</p>
-              <p className="text-lg font-bold text-green-600">{sideBet.actual_result}</p>
-            </div>
-          )}
-        </div>
-
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center">
-            <Award className="h-5 w-5 mr-2 text-yellow-500" />
-            Winners ({winners.length})
-          </h3>
-          
-          {winners.length === 0 ? (
-            <div className="text-center py-8 text-neutral-600">
-              <p>No winners for this bet</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {winners.map((winner, index) => (
-                <div
-                  key={winner.id}
-                  className="flex items-center justify-between bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg p-4 border border-yellow-200"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                      index === 0 ? 'bg-yellow-400 text-white' : 
-                      index === 1 ? 'bg-gray-400 text-white' :
-                      index === 2 ? 'bg-orange-400 text-white' :
-                      'bg-blue-100 text-blue-800'
-                    }`}>
-                      {index + 1}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-neutral-900">{winner.username}</p>
-                      {winner.option_text && (
-                        <p className="text-sm text-neutral-600">Selected: {winner.option_text}</p>
-                      )}
-                      {winner.prediction_value && (
-                        <p className="text-sm text-neutral-600">Predicted: {winner.prediction_value}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-green-600">
-                      ${parseFloat(winner.potential_payout).toFixed(2)}
-                    </p>
-                    <p className="text-xs text-neutral-600">payout</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <button
-          onClick={onClose}
-          className="w-full bg-neutral-100 text-neutral-700 px-4 py-2 rounded-lg font-medium hover:bg-neutral-200"
-        >
-          Close
-        </button>
       </div>
     </div>
   );
@@ -838,7 +1017,6 @@ function CreateSideBetModal({ onClose, onSuccess }) {
 
     try {
       const response = await fetch(`${API_BASE_URL}/side-bets`, {
-   
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -870,186 +1048,305 @@ function CreateSideBetModal({ onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold text-neutral-900 mb-6">Create Side Bet</h2>
-        
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
-          </div>
-        )}
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Title *
-            </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => handleInputChange('title', e.target.value)}
-              placeholder="e.g., Who will score first touchdown?"
-              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              disabled={creating}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Description *
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Provide more details about the bet..."
-              rows={3}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              disabled={creating}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Bet Type
-            </label>
-            <select
-              value={formData.bet_type}
-              onChange={(e) => handleInputChange('bet_type', e.target.value)}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              disabled={creating}
-            >
-              <option value="multiple_choice">Multiple Choice</option>
-              <option value="binary">Yes/No (Binary)</option>
-              <option value="prediction">Prediction (Number)</option>
-              <option value="over_under">Over/Under</option>
-            </select>
-          </div>
-
-          {(formData.bet_type === 'multiple_choice' || formData.bet_type === 'binary') && (
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Options *
-              </label>
-              <div className="space-y-2">
-                {formData.options.map((option, index) => (
-                  <div key={index} className="flex space-x-2">
-                    <input
-                      type="text"
-                      value={option}
-                      onChange={(e) => handleOptionChange(index, e.target.value)}
-                      placeholder={`Option ${index + 1}`}
-                      className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                      disabled={creating}
-                    />
-                    {formData.options.length > 2 && !creating && (
-                      <button
-                        onClick={() => removeOption(index)}
-                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {!creating && (
-                  <button
-                    onClick={addOption}
-                    className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                  >
-                    + Add Option
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Deadline *
-            </label>
-            <input
-              type="datetime-local"
-              value={formData.deadline}
-              onChange={(e) => handleInputChange('deadline', e.target.value)}
-              min={new Date().toISOString().slice(0, 16)}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              disabled={creating}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Entry Fee ($)
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.entry_fee}
-                onChange={(e) => handleInputChange('entry_fee', parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                disabled={creating}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Max Participants
-              </label>
-              <input
-                type="number"
-                min="2"
-                value={formData.max_participants}
-                onChange={(e) => handleInputChange('max_participants', e.target.value)}
-                placeholder="No limit"
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                disabled={creating}
-              />
-            </div>
-          </div>
-
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50" style={{
+      backdropFilter: 'blur(4px)',
+    }}>
+      <div className="rounded-xl w-full max-w-3xl max-h-[90vh] overflow-hidden" style={{
+        background: 'linear-gradient(145deg, #1a1f3a 0%, #0f1729 100%)',
+        border: '3px solid #d4af37',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
+      }}>
+        <div className="p-6 border-b-2" style={{
+          background: 'linear-gradient(90deg, #2c5f2d 0%, #1a3a1b 50%, #2c5f2d 100%)',
+          borderColor: '#d4af37',
+        }}>
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium text-neutral-900">Private Bet</h3>
-              <p className="text-sm text-neutral-600">Only people with invite code can join</p>
+            <div className="flex items-center gap-3">
+              <DollarSign className="h-8 w-8 text-yellow-400" />
+              <h2 className="text-3xl font-black text-white" style={{
+                textShadow: '2px 2px 0 #000',
+                fontFamily: 'Impact, sans-serif',
+              }}>CREATE SIDE BET</h2>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.is_private}
-                onChange={(e) => handleInputChange('is_private', e.target.checked)}
-                className="sr-only peer"
-                disabled={creating}
-              />
-              <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-            </label>
+            <button
+              onClick={onClose}
+              disabled={creating}
+              className="p-2 rounded-lg transition-all disabled:opacity-50"
+              style={{
+                background: 'rgba(220, 38, 38, 0.8)',
+                color: '#fff',
+              }}
+            >
+              <X className="h-6 w-6" />
+            </button>
           </div>
         </div>
 
-        <div className="flex space-x-3 mt-6 pt-6 border-t border-neutral-200">
-          <button
-            onClick={onClose}
-            disabled={creating}
-            className="flex-1 bg-neutral-100 text-neutral-700 px-4 py-2 rounded-lg font-medium hover:bg-neutral-200 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleCreate}
-            disabled={creating}
-            className="flex-1 bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50 flex items-center justify-center"
-          >
-            {creating ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Creating...
-              </>
-            ) : (
-              'Create Side Bet'
+        <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 180px)' }}>
+          {error && (
+            <div className="mb-6 rounded-xl p-4 flex items-center gap-3" style={{
+              background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
+              border: '2px solid #000',
+            }}>
+              <AlertTriangle className="h-5 w-5 text-white flex-shrink-0" />
+              <p className="text-white font-bold text-sm">{error}</p>
+            </div>
+          )}
+          
+          <div className="space-y-5">
+            <div>
+              <label className="block text-yellow-400 text-sm font-black uppercase mb-2">
+                Bet Title *
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                placeholder="e.g., Who will score first touchdown?"
+                disabled={creating}
+                className="w-full px-4 py-3 rounded-lg font-semibold text-white placeholder-slate-500 disabled:opacity-50"
+                style={{
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  border: '2px solid #4b5563',
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-yellow-400 text-sm font-black uppercase mb-2">
+                Description *
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                placeholder="Provide more details about the bet..."
+                rows={3}
+                disabled={creating}
+                className="w-full px-4 py-3 rounded-lg font-semibold text-white placeholder-slate-500 disabled:opacity-50"
+                style={{
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  border: '2px solid #4b5563',
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-yellow-400 text-sm font-black uppercase mb-2">
+                Bet Type
+              </label>
+              <select
+                value={formData.bet_type}
+                onChange={(e) => handleInputChange('bet_type', e.target.value)}
+                disabled={creating}
+                className="w-full px-4 py-3 rounded-lg font-bold text-white disabled:opacity-50"
+                style={{
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  border: '2px solid #4b5563',
+                }}
+              >
+                <option value="multiple_choice">Multiple Choice</option>
+                <option value="binary">Yes/No (Binary)</option>
+                <option value="prediction">Prediction (Number)</option>
+                <option value="over_under">Over/Under</option>
+              </select>
+            </div>
+
+            {(formData.bet_type === 'multiple_choice' || formData.bet_type === 'binary') && (
+              <div className="rounded-xl p-5" style={{
+                background: 'rgba(212, 175, 55, 0.1)',
+                border: '2px solid rgba(212, 175, 55, 0.3)',
+              }}>
+                <label className="block text-yellow-400 text-sm font-black uppercase mb-3">
+                  Options * (Minimum 2)
+                </label>
+                <div className="space-y-3">
+                  {formData.options.map((option, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={option}
+                        onChange={(e) => handleOptionChange(index, e.target.value)}
+                        placeholder={`Option ${index + 1}`}
+                        disabled={creating}
+                        className="flex-1 px-4 py-3 rounded-lg font-semibold text-white placeholder-slate-500 disabled:opacity-50"
+                        style={{
+                          background: 'rgba(0, 0, 0, 0.4)',
+                          border: '2px solid #4b5563',
+                        }}
+                      />
+                      {formData.options.length > 2 && !creating && (
+                        <button
+                          onClick={() => removeOption(index)}
+                          className="px-4 py-3 rounded-lg font-bold transition-all"
+                          style={{
+                            background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
+                            color: '#fff',
+                            border: '2px solid #7f1d1d',
+                          }}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {!creating && (
+                    <button
+                      onClick={addOption}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all"
+                      style={{
+                        background: 'linear-gradient(135deg, #d4af37 0%, #b8941f 100%)',
+                        color: '#000',
+                        border: '2px solid #000',
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Option
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
-          </button>
+
+            <div>
+              <label className="block text-yellow-400 text-sm font-black uppercase mb-2 flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Deadline *
+              </label>
+              <input
+                type="datetime-local"
+                value={formData.deadline}
+                onChange={(e) => handleInputChange('deadline', e.target.value)}
+                min={new Date().toISOString().slice(0, 16)}
+                disabled={creating}
+                className="w-full px-4 py-3 rounded-lg font-semibold text-white disabled:opacity-50"
+                style={{
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  border: '2px solid #4b5563',
+                  colorScheme: 'dark',
+                }}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-yellow-400 text-sm font-black uppercase mb-2 flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Entry Fee
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.entry_fee}
+                  onChange={(e) => handleInputChange('entry_fee', parseFloat(e.target.value) || 0)}
+                  disabled={creating}
+                  className="w-full px-4 py-3 rounded-lg font-semibold text-white disabled:opacity-50"
+                  style={{
+                    background: 'rgba(0, 0, 0, 0.4)',
+                    border: '2px solid #4b5563',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-yellow-400 text-sm font-black uppercase mb-2 flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Max Participants
+                </label>
+                <input
+                  type="number"
+                  min="2"
+                  value={formData.max_participants}
+                  onChange={(e) => handleInputChange('max_participants', e.target.value)}
+                  placeholder="No limit"
+                  disabled={creating}
+                  className="w-full px-4 py-3 rounded-lg font-semibold text-white placeholder-slate-500 disabled:opacity-50"
+                  style={{
+                    background: 'rgba(0, 0, 0, 0.4)',
+                    border: '2px solid #4b5563',
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-xl p-5" style={{
+              background: 'rgba(212, 175, 55, 0.1)',
+              border: '2px solid rgba(212, 175, 55, 0.3)',
+            }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Lock className="h-5 w-5 text-yellow-400" />
+                  <div>
+                    <h3 className="font-black text-white uppercase">Private Bet</h3>
+                    <p className="text-sm text-slate-300 font-semibold">Only people with invite code can join</p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_private}
+                    onChange={(e) => handleInputChange('is_private', e.target.checked)}
+                    className="sr-only peer"
+                    disabled={creating}
+                  />
+                  <div className="w-14 h-7 rounded-full peer transition-all relative" style={{
+                    background: formData.is_private 
+                      ? 'linear-gradient(135deg, #d4af37 0%, #b8941f 100%)' 
+                      : '#4b5563',
+                  }}>
+                    <div className="absolute top-[2px] left-[2px] bg-white rounded-full h-6 w-6 transition-transform" style={{
+                      transform: formData.is_private ? 'translateX(28px)' : 'translateX(0)',
+                    }}></div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 border-t-2" style={{
+          background: 'rgba(0, 0, 0, 0.4)',
+          borderColor: '#d4af37',
+        }}>
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              disabled={creating}
+              className="flex-1 py-3 rounded-lg font-black uppercase text-sm transition-all disabled:opacity-50"
+              style={{
+                background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+                color: '#fff',
+                border: '2px solid #374151',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCreate}
+              disabled={creating}
+              className="flex-1 py-3 rounded-lg font-black uppercase text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              style={{
+                background: creating 
+                  ? 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)'
+                  : 'linear-gradient(135deg, #d4af37 0%, #b8941f 100%)',
+                color: creating ? '#fff' : '#000',
+                border: '2px solid #000',
+                boxShadow: creating ? 'none' : '0 4px 15px rgba(212, 175, 55, 0.4)',
+              }}
+            >
+              {creating ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-5 w-5" />
+                  Create Side Bet
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

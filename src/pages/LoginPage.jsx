@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { Trophy, AlertCircle } from 'lucide-react';
 import AgeVerification from '../components/AgeVerification';
-import nfl from '../assets/nfl.png';
+
 import yourVideoFile from '../assets/3D Explainer Video.mp4';
 import { Link } from 'react-router-dom';
 
