@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { LogOut, User, Shield, Trophy, Target, DollarSign, Activity, CalendarDays } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import fieldSvg from '/field.svg';
 
 function Layout({ children }) {
   const { user, logout, isAdmin } = useAuth();
@@ -23,7 +24,7 @@ function Layout({ children }) {
       <div 
         className="fixed inset-0 pointer-events-none opacity-10 z-0"
         style={{
-          backgroundImage: 'url(/field.svg)',
+          backgroundImage: 'url{fieldSvg}',
           backgroundSize: 'contain',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
