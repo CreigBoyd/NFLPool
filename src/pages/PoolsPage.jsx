@@ -168,38 +168,38 @@ function PoolsPage() {
     fetchPools();
   }, []);
 
-  const fetchPools = async (isRefresh = false) => {
-    try {
-      if (isRefresh) {
-        setRefreshing(true);
-        showInfo('Refreshing available pools...');
-      }
-const res = await fetch(`${API_BASE_URL}/pools`, {
-      
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setPools(data);
-        
-        if (isRefresh) {
-          showSuccess(`Found ${data.length} available pools!`);
-        }
-      } else {
-        const errorMessage = 'Failed to load pools. Please try again.';
-        showError(errorMessage);
-      }
-    } catch (error) {
-      console.error('Error fetching pools:', error);
-      showError('Network error loading pools. Check your connection.');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+const fetchPools = async (isRefresh = false) => {
+  try {
+    if (isRefresh) {
+      setRefreshing(true);
+      showInfo('Refreshing available pools...');
     }
-  };
+    
+    const response = await fetch(`${API_BASE_URL}/pools`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      setPools(data);
+      
+      if (isRefresh) {
+        showSuccess(`Found ${data.length} available pools!`);
+      }
+    } else {
+      const errorMessage = 'Failed to load pools. Please try again.';
+      showError(errorMessage);
+    }
+  } catch (error) {
+    console.error('Error fetching pools:', error);
+    showError('Network error loading pools. Check your connection.');
+  } finally {
+    setLoading(false);
+    setRefreshing(false);
+  }
+};
 
   const handleRefresh = () => {
     fetchPools(true);
