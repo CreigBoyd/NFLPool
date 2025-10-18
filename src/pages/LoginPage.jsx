@@ -4,8 +4,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { Trophy, AlertCircle } from 'lucide-react';
 import AgeVerification from '../components/AgeVerification';
-
-import yourVideoFile from '../assets/3D Explainer Video.mp4';
 import { Link } from 'react-router-dom';
 
 function LoginPage() {
@@ -27,10 +25,8 @@ function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check if we should start in signup mode based on route
   useEffect(() => {
     if (location.pathname === '/register') {
-      // Check age verification before showing signup
       const verified = sessionStorage.getItem('age_verified');
       if (verified) {
         setIsSignUp(true);
@@ -56,7 +52,6 @@ function LoginPage() {
     const result = await login(loginData.username, loginData.password);
 
     if (result.success) {
-      // Check if user is admin and redirect accordingly
       if (isAdmin()) {
         showProfessional(`Welcome back, Admin ${loginData.username}! Redirecting to dashboard...`);
         navigate('/admin');
@@ -77,7 +72,6 @@ function LoginPage() {
     setError('');
     setSuccessMessage('');
 
-    // Password validation
     if (signupData.password !== signupData.confirmPassword) {
       showWarning('Passwords do not match');
       setLoading(false);
@@ -93,10 +87,8 @@ function LoginPage() {
     const result = await register(signupData.username, signupData.email, signupData.password);
 
     if (result.success) {
-      // Show professional message about pending approval
       showProfessional('Registration submitted! Your account is awaiting admin approval. You will be notified once approved.');
       setSignupData({ username: '', email: '', password: '', confirmPassword: '' });
-      // Switch back to login after delay
       setTimeout(() => {
         setIsSignUp(false);
       }, 4000);
@@ -108,14 +100,12 @@ function LoginPage() {
   };
 
   const switchToSignUp = () => {
-    // Check if already verified in this session
     const verified = sessionStorage.getItem('age_verified');
     if (verified) {
       setIsSignUp(true);
       setError('');
       setSuccessMessage('');
     } else {
-      // Show age verification modal first
       setShowAgeVerification(true);
     }
   };
@@ -139,7 +129,6 @@ function LoginPage() {
 
   return (
     <div className="min-h-screen bg-neutral-900 relative overflow-hidden">
-      {/* Age Verification Modal */}
       <AgeVerification 
         isOpen={showAgeVerification}
         onVerified={handleAgeVerified}
@@ -150,26 +139,10 @@ function LoginPage() {
       <div className="absolute top-0 left-0 w-96 h-96 bg-green-600/10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-green-600/10 rounded-full blur-3xl"></div>
 
-      {/* Video in top right corner */}
-      <div className="absolute top-8 right-8 z-20">
-        <div className="bg-black rounded-lg overflow-hidden shadow-2xl border-2 border-green-600/30">
-          <video
-            className="w-64 h-36 object-cover"
-            autoPlay
-            loop
-            muted
-            playsInline
-          >
-            <source src={yourVideoFile} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
-      </div>
-
-      {/* Main Content - Centered Form */}
-      <div className="min-h-screen flex items-center justify-center py-12 px-4">
-        {/* Animated Form Container */}
-        <div className="relative" style={{ width: '700px', height: '450px' }}>
+      {/* Main Content - MOBILE FIXED */}
+      <div className="min-h-screen flex items-center justify-center py-6 sm:py-12 px-4">
+        {/* Desktop Layout (hidden on mobile) */}
+        <div className="hidden md:block relative w-full max-w-[700px] mx-auto" style={{ minHeight: '450px' }}>
           {/* Background sliding panel */}
           <div 
             className="absolute w-full transition-all duration-700 ease-in-out clock"
@@ -227,7 +200,7 @@ function LoginPage() {
             </div>
           </div>
 
-          {/* Front sliding form panel */}
+          {/* Front sliding form panel - Desktop */}
           <div 
             className={`absolute clock h-full w-1/2 z-10 transition-all duration-700 ease-in-out`}
             style={{ 
@@ -260,7 +233,7 @@ function LoginPage() {
               </div>
             )}
 
-            {/* Login Form */}
+            {/* Login Form - Desktop */}
             <div className={`p-8 text-center h-full flex flex-col justify-center ${isSignUp ? 'hidden' : 'block'}`}>
               <h2 className="text-white text-2xl font-normal mb-8">LOG IN 🏈</h2>
               <form onSubmit={handleLoginSubmit} className="space-y-5">
@@ -302,7 +275,7 @@ function LoginPage() {
               </form>
             </div>
 
-            {/* Signup Form */}
+            {/* Signup Form - Desktop */}
             <div className={`p-8 text-center h-full flex flex-col justify-center ${!isSignUp ? 'hidden' : 'block'}`}>
               <h2 className="text-white text-2xl font-normal mb-6">SIGN UP 🏈</h2>
               <form onSubmit={handleSignupSubmit} className="space-y-4">
@@ -364,19 +337,182 @@ function LoginPage() {
           </div>
         </div>
 
+        {/* Mobile Layout (visible only on mobile) */}
+        <div className="md:hidden w-full max-w-md mx-auto">
+          <div className="clock rounded-2xl overflow-hidden">
+            {/* Mobile Header */}
+            <div className="bg-gradient-to-r from-green-800 to-green-900 p-6 text-center border-b-2 border-green-600">
+              <div className="flex justify-center mb-4">
+                <Trophy className="h-12 w-12 text-green-400" />
+              </div>
+              <h1 className="text-white text-3xl font-bold mb-1">603D</h1>
+              <h2 className="text-white text-xl font-light mb-1">Phantom</h2>
+              <p className="text-white/80 text-sm">NFL / Pool</p>
+            </div>
+
+            {/* Mobile Tab Switcher */}
+            <div className="flex border-b-2 border-green-600">
+              <button
+                onClick={() => setIsSignUp(false)}
+                className={`flex-1 py-3 font-bold text-sm transition-all ${
+                  !isSignUp 
+                    ? 'bg-green-700 text-white border-b-4 border-green-400' 
+                    : 'bg-gray-800 text-gray-400'
+                }`}
+              >
+                LOG IN
+              </button>
+              <button
+                onClick={switchToSignUp}
+                className={`flex-1 py-3 font-bold text-sm transition-all ${
+                  isSignUp 
+                    ? 'bg-green-700 text-white border-b-4 border-green-400' 
+                    : 'bg-gray-800 text-gray-400'
+                }`}
+              >
+                SIGN UP
+              </button>
+            </div>
+
+            {/* Error/Success Messages - Mobile */}
+            {error && (
+              <div className="m-4 rounded-md bg-red-50 p-3">
+                <div className="flex">
+                  <AlertCircle className="h-4 w-4 text-red-400 flex-shrink-0" />
+                  <div className="ml-2">
+                    <p className="text-xs font-medium text-red-800">{error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="m-4 rounded-md bg-green-50 p-3">
+                <div className="flex">
+                  <Trophy className="h-4 w-4 text-green-400 flex-shrink-0" />
+                  <div className="ml-2">
+                    <p className="text-xs font-medium text-green-800">{successMessage}</p>
+                    <p className="text-xs text-green-700 mt-1">Switching to login...</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Mobile Forms */}
+            <div className="p-6">
+              {/* Login Form - Mobile */}
+              {!isSignUp && (
+                <form onSubmit={handleLoginSubmit} className="space-y-4">
+                  <div>
+                    <input
+                      type="text"
+                      name="username"
+                      placeholder="USERNAME"
+                      required
+                      value={loginData.username}
+                      onChange={handleLoginChange}
+                      className="block w-full h-12 text-white clock border-none text-sm px-4 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="password"
+                      name="password"
+                      placeholder="PASSWORD"
+                      required
+                      value={loginData.password}
+                      onChange={handleLoginChange}
+                      className="block w-full h-12 text-white clock border-none text-sm px-4 rounded-lg"
+                    />
+                  </div>
+                  <p
+                    onClick={() => navigate('/forgot-password')}
+                    className="cursor-pointer text-gray-300 text-xs text-center hover:text-gray-500"
+                  >
+                    FORGOT PASSWORD?
+                  </p>
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {loading ? 'SIGNING IN...' : 'LOG IN 🏈'}
+                  </button>
+                </form>
+              )}
+
+              {/* Signup Form - Mobile */}
+              {isSignUp && (
+                <form onSubmit={handleSignupSubmit} className="space-y-4">
+                  <div>
+                    <input
+                      type="text"
+                      name="username"
+                      placeholder="USERNAME"
+                      required
+                      value={signupData.username}
+                      onChange={handleSignupChange}
+                      className="block w-full h-12 text-white clock border-none text-sm px-4 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="EMAIL"
+                      required
+                      value={signupData.email}
+                      onChange={handleSignupChange}
+                      className="block w-full h-12 text-white clock border-none text-sm px-4 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="password"
+                      name="password"
+                      placeholder="PASSWORD (MIN 6 CHARS)"
+                      required
+                      value={signupData.password}
+                      onChange={handleSignupChange}
+                      className="block w-full h-12 text-white clock border-none text-sm px-4 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      placeholder="CONFIRM PASSWORD"
+                      required
+                      value={signupData.confirmPassword}
+                      onChange={handleSignupChange}
+                      className="block w-full h-12 text-white clock border-none text-sm px-4 rounded-lg"
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {loading ? 'SUBMITTING...' : 'SIGN UP 🏈'}
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Footer Branding */}
-        <div className="absolute bottom-6 left-0 right-0 text-center">
+        <div className="absolute bottom-6 left-0 right-0 text-center px-4">
           <div className="text-gray-500 text-sm space-y-1">
             <p>© 2025 603D Phantom. All rights reserved.</p>
-            <div className="flex items-center justify-center gap-4 text-xs">
+            <div className="flex items-center justify-center gap-4 text-xs flex-wrap">
               <Link to="/terms" className="hover:text-green-400 transition">
-        Terms of Service
-      </Link>
-              <span>•</span>
+                Terms of Service
+              </Link>
+              <span className="hidden sm:inline">•</span>
               <Link to="/privacy" className="hover:text-green-400 transition">
-        Privacy Policy
-      </Link>
-              
+                Privacy Policy
+              </Link>
             </div>
           </div>
         </div>
