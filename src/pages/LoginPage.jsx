@@ -53,7 +53,7 @@ function LoginPage() {
 
     if (result.success) {
       if (isAdmin()) {
-        showProfessional(`Welcome back, Admin ${loginData.username}! Redirecting to dashboard...`);
+        showProfessional(`Good to see you again, Admin ${loginData.username}! Redirecting to dashboard...`);
         navigate('/admin');
       } else {
         showSuccess(`Welcome back, ${loginData.username}!`);
